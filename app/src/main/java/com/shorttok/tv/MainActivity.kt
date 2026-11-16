@@ -49,11 +49,25 @@ class MainActivity : AppCompatActivity() {
                 userAgentString = DESKTOP_UA
                 loadWithOverviewMode = true
                 useWideViewPort = true
-                mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                allowFileAccess = false
+                allowContentAccess = false
+                mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             }
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
             webChromeClient = WebChromeClient()
             webViewClient = object : WebViewClient() {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: android.webkit.WebResourceRequest?
+                ): Boolean {
+                    val host = request?.url?.host?.lowercase() ?: return true
+                    val allowed = host.endsWith("tiktok.com") ||
+                        host.endsWith("tiktokv.com") ||
+                        host.endsWith("byteoversea.com") ||
+                        host.endsWith("accounts.google.com")
+                    return !allowed
+                }
+
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     injectTvStyles()
