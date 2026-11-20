@@ -174,11 +174,26 @@ class MainActivity : AppCompatActivity() {
     private fun injectTvStyles() {
         val js = """
             (function() {
-                if (document.getElementById('shorttok-tv-style')) return;
-                const style = document.createElement('style');
-                style.id = 'shorttok-tv-style';
-                style.textContent = 'body { overflow: hidden !important; background: #000 !important; }';
-                document.head.appendChild(style);
+                if (!document.getElementById('shorttok-tv-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'shorttok-tv-style';
+                    style.textContent = 'body { overflow: hidden !important; background: #000 !important; }';
+                    document.head.appendChild(style);
+                }
+                let tries = 0;
+                const autoDismiss = setInterval(() => {
+                    tries++;
+                    // Auto-accept cookies banner
+                    const buttons = Array.from(document.querySelectorAll('button, div[role="button"], a'));
+                    const allowBtn = buttons.find(b => /allow all|accept all|accepter alle/i.test(b.innerText || ''));
+                    if (allowBtn) allowBtn.click();
+
+                    // Auto-click Skip on login modal
+                    const skipBtn = buttons.find(b => /^(skip|spring over)$/i.test((b.innerText || '').trim()));
+                    if (skipBtn) skipBtn.click();
+
+                    if (tries > 20) clearInterval(autoDismiss);
+                }, 700);
             })();
         """.trimIndent()
         webView.evaluateJavascript(js, null)
